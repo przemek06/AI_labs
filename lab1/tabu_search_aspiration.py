@@ -91,6 +91,7 @@ def tabu_search_aspiration(graph, start_stop, stops_to_visit, start_time, optimi
     while i < SIMPLE_TABU_SEARCH_ITERATION_LIMIT/LOCAL_TABU_LIMIT:
         j = 0
         local_best_solution = current_solution
+        all_local_solutions = {}
         while j < LOCAL_TABU_LIMIT:
             neighbourhood = generate_neighbourhood(current_solution.stops_in_order)
             viable = [item for item in neighbourhood if item not in tabu or ( tuple(item) in history.keys() and history[tuple(item)] < local_best_solution.cost)]
@@ -101,7 +102,7 @@ def tabu_search_aspiration(graph, start_stop, stops_to_visit, start_time, optimi
             neighbourhood_solutions = [generate_solution(graph, neigbour, start_time, optimization_criterion) for neigbour in viable]
             
             for neighbourhood_solution in neighbourhood_solutions:
-                history[tuple(neighbourhood_solution.stops_in_order)] = neighbourhood_solution.cost
+                all_local_solutions[tuple(neighbourhood_solution.stops_in_order)] = neighbourhood_solution.cost
 
             current_solution = min(neighbourhood_solutions, key= lambda s: s.cost)
 
@@ -110,6 +111,9 @@ def tabu_search_aspiration(graph, start_stop, stops_to_visit, start_time, optimi
 
             tabu = tabu + viable
             j = j + 1
+        for local_solution in all_local_solutions.keys():
+            history[local_solution] = all_local_solutions[local_solution]
+            
         if local_best_solution.cost < best_solution.cost:
             best_solution = local_best_solution
         i = i + 1
